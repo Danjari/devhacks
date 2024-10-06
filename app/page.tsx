@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Image from "next/image";
+import { useSignUp } from '@clerk/nextjs';
+  import { useUser } from '@clerk/nextjs';
 
 import Link  from "next/link";
 
@@ -9,6 +11,7 @@ export default function Home() {
   const [data, setData] = useState('');
   
  
+  
   const { signUp } = useSignUp();
   const {isLoaded, isSignedIn, user} = useUser();
 
