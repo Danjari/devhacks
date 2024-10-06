@@ -1,4 +1,14 @@
 from langchain_community.document_loaders import PyPDFLoader
+import getpass, os, pymongo, pprint
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+from langchain_mongodb import MongoDBAtlasVectorSearch
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain.prompts import PromptTemplate
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from pymongo import MongoClient
+from pymongo.operations import SearchIndexModel
 import asyncio
 import pymongo
 import os
@@ -19,15 +29,28 @@ async def upload_data():
         client = pymongo.MongoClient('mongodb+srv://boomoha:wXohzL8lNUuDJPtr@boohoma.e9lur.mongodb.net/?retryWrites=true&w=majority&appName=boohoma')
         database = client["synapsED"]
         collection = database["linear_algebra"]
-        pages = await load_pages()
-        for page in pages:
-            data = {
-                'origin': file_path,
-                'content': page.page_content
+        vector_search_index = 'interactive_linear_algebra'
+        loader = PyPDFLoader("/Users/boubalkaly/Desktop/devhacks/ila-1553.pdf")
+        data = loader.load()
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=200, chunk_overlap=20)
+        docs = text_splitter.split_documents(data)
+        vector_store = MongoDBAtlasVectorSearch.from_documents(
+        documents = docs,
+        embedding = OpenAIEmbeddings(disallowed_special=()),
+        collection = 'linear_algebra',
+        index_name = vector_search_index
+        
+)
+
+        # pages = await load_pages()
+        # for page in pages:
+        #     data = {
+        #         'origin': file_path,
+        #         'content': page.page_content
                 
-            }
-            page_id = collection.insert_one(data).inserted_id
-            print(f"Inserted page with id: {page_id}")
+        #     }
+        #     page_id = collection.insert_one(data).inserted_id
+        #     print(f"Inserted page with id: {page_id}")
 
     except Exception as e:
         print(f"Error: {e}")
